@@ -7,7 +7,11 @@ export async function resolve(specifier, context, nextResolve) {
         return await nextResolve(specifier, context);
     } catch (err) {
         if (err.url?.endsWith(".js")) {
-            return nextResolve(err.url.slice(0, -".js".length) + ".ts");
+            return nextResolve(err.url.slice(0, -".js".length) + ".ts", context);
+        }
+        // Path imports (`./foo/bar`, `../foo/bar`, or `/foo/bar`) can omit the extension
+        if ((specifier.startsWith('.') || specifier.startsWith('/')) && extname(specifier) === '') {
+            return nextResolve(specifier + '.ts', context);
         }
         throw err;
     }
